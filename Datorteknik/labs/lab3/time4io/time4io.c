@@ -1,0 +1,11 @@
+#include <stdint.h>
+#include <pic32mx.h>
+#include "mibslab.h"
+
+int getsw() {
+    return (PORTD >> 8) & 0xF;
+}
+
+int getbtns() {
+    return (PORTD >> 5) & 0x7;
+}

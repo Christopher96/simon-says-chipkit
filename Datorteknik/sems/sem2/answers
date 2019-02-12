@@ -1,0 +1,144 @@
+1.
+
+line 7
+
+add     $s0,    $s0,    $s1
+        rd      rs      rt
+        15:11   25:21   20:16
+
+Jump = 0
+RegWrite = 1
+RegDst = 0
+ALUSrc = 0
+ALUControl = 000(2) (and)
+Branch = 0
+MemWrite = ?
+MemToReg = 0
+
+line 8
+
+sw      $s0,    0       ($a1)
+        rt      imm     (rs)
+        20:16   15:0    25:21
+
+Jump = 0
+RegWrite = 1
+RegDst = 0
+ALUSrc = 1
+ALUControl = 010(2) (addition)
+Branch = 0
+MemWrite = 0
+MemToReg = 1
+
+j       loop
+        address
+        25:0
+
+Jump = 1
+RegWrite = 0
+RegDst = ?
+ALUSrc = ?
+ALUControl = ?
+Branch = 0
+MemWrite = 0
+MemToReg = ?
+
+
+2.
+
+slt     $t0,    $t1,    $a0     
+op      rd      rs      rt      funct
+0       8       9       4       42
+
+
+op      rs      rt      rd      shamt   funct
+000000  01001   00100   01000   00000   101010
+31:26   25:21   20:16   15:11   10:6    5:0
+
+0x0124402A
+
+1. Unknown
+2. $a0
+3. 00000000000000000100000000101010 = 0x402A
+4. $t1
+5. 0x8
+6. 0x4
+7. 0x8
+8. 0x0
+
+
+beq     $t0,    $0,     done
+op      rs      rt      label
+4       8       0       ?
+
+31:26   25:21   20:16   15:0
+op      rs      rt      imm
+00100   01000   00000   0x30
+
+1. Unknown
+2. $0
+3. 0x7
+4. $t0
+5. Unknown
+6. 0x0
+7. 0x0
+8. 0x1
+
+
+
+3.
+
+a) Clock period = 12.5 ns
+b) i), stalls can increase the CPI
+
+
+
+4.
+
+1. lui     $s0, $0x1001    F   D   E   M   W
+2. addi    $t0, $0, 10         F   D   E   M   W
+3. sw      $t0, 12($s0)            F  (D)  E   M   W
+4. lw      $t1, 8($s0)                 F   D   E   M   W
+5. and     $t0, $t0, $t1                   F  (D)  E   M   W
+
+
+data hazard: 
+we are decoding (D) $t0 on line 3 before we have written (W) to it on line 1
+solution:
+we use data forwarding to forwarding D from line 1 to E line 3
+
+data hazard:
+we are decoding (D) $t0 on line 5 before we have written (W) to it on line 3 
+solution:
+we use data forwarding to forwarding D from line 3 to E line 5
+
+5.
+
+a) Control Hazard
+b) By using flushing, we flush the instructions that was mispredicted
+c) If the branch prediction is bad it will result in a large misprediction penalty which means a lot instructions are being executed and flushed unnecessarily.
+d) Branch predictors are used to predict whether a branch should be made or not, the better branch prediction the less need for flushing which results in better performance.
+
+
+6.
+
+MIPS
+Similarities:
+RISC instructions
+
+ARMv7
+Similarities:
+RISC instructions
+
+Differences:
+Standard for mobile phones 
+Manufactured by Apple and Samsung
+
+x86
+Differences:
+Standard for PCs and laptops
+CISC instructions
+8 general purpose registers (eax, ebx, ecx, edx, esp, ebp, esi, edi)
+Manufactured by Intel and AMD
+64 bit variants
+

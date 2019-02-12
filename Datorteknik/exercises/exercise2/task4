@@ -1,0 +1,65 @@
++ auto-restart
++ sets a bit, program must reset bits
++ counts up, not down
++ counts clock cycles with a divisor called pre-scaler
+
+T2CON   General config bits
+TMR2    Current counter value
+PR2     Period register (=limit value)
+IEC(0)  Interrupt Enable (later!)
+IFS(0)  Interrupt Flag  (the bit to check for)
+
+
+# INIT - Add enabling of interupts for time 2
+
+T2CON = 0; // Turn off timer 2
+PR2 = (80000000 / 64 / 100); // timeout every 10 ms - 100 times per second
+TMR2 = 0;
+
+# From the timer manual
+T2CON = 0x8060 // Start timer with correct prescale value
+
+bit 15: ON/OFF
+bit 6-4: Prescale
+
+
+# USE - Remove and move to ISR
+
+while
+if(IFS(0) & (1 << 8)) {
+    IFSCLR(0) = 1<<8;
+    // clear timer 2 flag
+    ...
+    // Do things that should happen at timeout
+    // Interrupt - Interrupt Service Routine (ISR)
+}
+
+
+# ISR
+
+if(IFS(0) & (1 << 8)) {
+    // interupt from timer 2
+    IFSCLR(0) = 1 << 8;
+} else if(...) { // Another source of interrupt
+    ...
+}
+
+
+# Enabling interrupts
+
+1. IEC bit     T2IE    (Timer 2 int.enable)
+2. int.prio
+3. EI
+
+1. IEC(0) = (1 << 8);
+2. IPC(2) = (7 << 2);
+3. void enable_interrupts(void);
+
+
+labwork.S, add
+    .global enable_interrupts
+    .text
+enable_interrupts
+    ei
+    jr $ra
+

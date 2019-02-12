@@ -1,0 +1,132 @@
+1. 
+
+a)  A, B = Inputs, Y = Output, F = Control signal
+b)  To save resources and space
+c)  F = 5 = 101(2)  A = FF(16)
+
+
+2.
+
+a)
+
+add $t3,    $s0,    $s1
+
+    rd      rs      rt
+
+    11      16      17    
+
+    15:11   25:21   20:16
+
+
+A1 = 16
+A2 = 17
+A3 = 11
+RegDst = 1
+
+b)
+
+$s4 = 0x0000FF08
+
+lw  $t2,    -4      ($s4)
+    rt      imm     rs
+
+Jump = 0
+RegWrite = 1
+RegDst = 0
+ALUSrc = 1
+ALUControl = 010(2) (addition)
+Branch = 0
+MemWrite = 0
+MemToReg = 1
+A = 0x0000FF04
+WD = Contents of $t2 (Doesn't matter)
+
+
+3.
+
+0x214BFFFD = 0010   0001    0100    1011    1111    1111    1111    1101 (2)
+
+             001000 = 8     01010 = 10      01011 = 11      1111111111111101 = -3  
+
+             op             rs              rt              imm
+
+             addi   $t3, $t2, -3
+
+             0xFFFFFFF5 - 3 = 0xFFFFFFF2 = WD3
+
+
+4.
+
+a) False, e.g. add 
+b) True
+c) True
+d) False, e.g. ori, addi
+
+
+5.
+
+a) False
+
+Execution time = Clocks/Instructions * #Instructions * Time/Clocks
+               = CPI                 * Program Size  * Clock period = 1/freq
+
+
+Pipeline
+
+Larger CPI
+
+1   2   3   4   5
+
+F   D   E   M   W
+    F   D   E   M
+        F   D   E
+            F   D
+
+Single cycle
+
+No hazards
+
+1                   2                   3
+
+F   D   E   M   W
+                    F   D   E   M   W
+                                        F   D   E   M   W
+
+
+b) True.
+
+[F  ][D][E      ][M ][W ]
+
+The clock cycle is restricted to the subprocess with the most critical path
+
+
+
+c) False
+d) True
+
+
+6.
+
+a) 
+
+Yes, data hazard, we are trying to decode s0 clk2 before it's written in clk1
+It's solved by data forwarding, we can execute by forwarding D from clk1 to E in clk2
+
+b)
+
+Data hazard
+Solution: Data forwarding + stalling 
+
+c)
+
+beq     F   D   E   (M) W
+            F   D   E   M   W               X
+                F   D   E   M   W           X
+                    F   D   E   M   W       X
+                        F   D   E   M   W
+
+Control Hazard
+Solution: Flushing
+
+We predict no branch
+We flush 3 cycles because of branch misprediction penalty if branch is taken on (M) memory stage.

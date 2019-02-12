@@ -1,0 +1,11 @@
+a)
+Från pic32mx data sheet ser vi att 
+
+0 = output
+1 = input
+
+För TRIS*
+
+d)
+
+PORTE = (5 << 1);
