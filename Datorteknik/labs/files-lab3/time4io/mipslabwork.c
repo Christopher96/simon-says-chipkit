@@ -14,6 +14,9 @@
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "mipslab.h"  /* Declatations for these labs */
 
+/* int getbtns(void); */
+/* int getsw(void); */
+
 int mytime = 0x5957;
 
 char textstring[] = "text, more text, and even more text!";
@@ -38,38 +41,76 @@ void labinit( void )
     *trise = *trise & 0xFF00;
 
     // Initialize port D bit 5-11 as input (switches and buttons)
-    TRISD &= 0xFF00;
+    TRISD &= 0x7FF0;
 
     return;
 }
 
+void print_binary(int bin) {
+    int max = 32;
+    char str[max];
+    int i = 0;
+
+    while(bin >> i) {
+        i++;
+    }
+
+    str[i] = '\0';
+
+    while(i > 0) {
+        i -= 1;
+        if(bin & 1) {
+            str[i] = '1';
+        } else {
+            str[i] = '0';
+        }
+        bin >>= 1;
+    }
+
+    display_string(0, str);
+    display_update();
+}
+
+int mask = 0;
 int btns = 0;
 int switches = 0;
 int count = 0;
 
+void update_time(int byte, int val) {
+    // Set mask to to the correct byte
+    mask = (0xF << byte * 4);
+    // Rotate the switch values to the correct place
+    val <<= byte * 4;
+    // Mask the byte that should be changed to all 0, then add the switch values to that specific byte
+    mytime = (mytime & ~mask) | val;
+}
+
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-    delay( 1000 );
-    time2string( textstring, mytime );
-    display_string( 3, textstring );
-    display_update();
-    tick( &mytime );
-    display_image(96, icon);
+    delay( 100 );
 
     *porte = count;
     count++;
 
     btns = getbtns();
-    switches = getswitches();
+    switches = getsw();
 
-    if((btns >> 3) & 1) {
-        // Change only 
-        mytime &= (switches << 8) | ~0;
-    } else if ((btns >> 2) & 1) {
+    if((btns >> 2) & 1) {
+        update_time(3, switches);
+    } 
 
-    } else if (btns & 1) {
-
+    if ((btns >> 1) & 1) {
+        update_time(2, switches);
     }
-}
 
+    if (btns & 1) {
+        update_time(1, switches);
+    }
+
+    time2string( textstring, mytime );
+    display_string( 3, textstring );
+    display_update();
+    tick( &mytime );
+    display_image(96, icon);
+}
