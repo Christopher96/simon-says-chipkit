@@ -88,7 +88,7 @@ void update_time(int byte, int val) {
 /* This function is called repetitively from the main program */
 void labwork( void )
 {
-    delay( 100 );
+    delay( 1000 );
 
     *porte = count;
     count++;

@@ -23,26 +23,39 @@ int count = 0;
 /* Interrupt Service Routine */
 void user_isr( void )
 {
-    count++;
-
-    if(count == 10) {
-        count = 0;
+    // Check for timer flag
+    if(IFS(0) & 0x00000100) {
         time2string(textstring, mytime);
         display_string(3, textstring);
         display_update();
         tick(&mytime);
+
+        // Reset the interrupt flag
+        IFSCLR(0) = 0x00000100;
     }
-    // Reset the interrupt flag
-    IFSCLR(0) = 0x00000100;
+
+    if(IFS(0) & 0x80) {
+        count++;
+        PORTESET = count;
+
+        IFSCLR(0) = 0x80;
+    }
+
 }
 
 int prime = 1234567;
 
-volatile int * ipc;
-
 /* Lab-specific initialization goes here */
 void labinit( void )
 {
+    /* Switch 1 - SW1 */
+
+    // Set switch interrupt priority
+    IPC(1) = (0x1F << 24);
+
+    // Enable interrupt INT1IE bit 7
+    IECSET(0) = 0x80;
+
     // Stop Timer 2 and reset control register
     T2CON = 0x0;
     
@@ -64,13 +77,20 @@ void labinit( void )
     // Clear timer interrupt status flag
     IFSCLR(0) = 0x00000100;
 
-    // Enable timer interrupts
-    enable_interrupt();
-
     // Start Timer 2
     T2CONSET = 0x8000;
 
-    return;
+    // Enable timer interrupts
+    enable_interrupt();
+
+    // Set switches and buttons as inputs
+    TRISDSET = 0x7FF0;
+
+    // Set leds to outputs
+    TRISESET = 0xFF00;
+
+    // Reset leds
+    PORTE = 0x0;
 }
 
 
