@@ -4,9 +4,9 @@ a)
 
 C = 2048
 b = 8
-S = B/N = 256/1 = 256 
-B = C/b = 2048/8 = 256 
 N = 1
+#B = C/b = 2048/8 = 256 
+#S = B/N = 256/1 = 256 
 
 tag = 22 bits
 set = log2(S) = log2(256) = 8 bits
@@ -14,9 +14,9 @@ byte offset = 2 bits
 
 C = 4096
 b = 16
-s = B/N = 256/4 = 64 
-B = C/b = 4096/16 = 256 
 N = 4
+#B = C/b = 4096/16 = 256 
+#S = B/N = 256/4 = 64 
 
 tag = 24
 set = log2(64) = 6 
@@ -27,9 +27,9 @@ byte offset = 2
 
 C = 4096
 b = 16
-S = B/N = 256
-B = C/b = 4096/16 = 256
 N = 1
+#B = C/b = 4096/16 = 256
+#S = B/N = 256
 
 tag = 22
 set = 8
@@ -38,5 +38,171 @@ offset = 2
 0x12FF = 0001 0010 1111 1111 
 
 0x1240 = 0001 0010 0100 0000
+
+tag
+00 0100 1011 1111 1100 0100
+0x08BFC4
+
+set
+1001 0000
+0x90
+
+
 0x5AA4 = 0101 1010 1010 0100
+
+set
+1010 1001
+0xA9
+
+tag
+00 0100 1011 1111 1101 0110
+0x08BFD6
+
+
 0x4248 = 0100 0010 0100 1000
+
+set
+1001 0010
+0x92
+
+tag
+0100 1011 1111 1101 0000
+0x8BFD0
+
+
+3.
+
+32 bits
+
+C = 1024
+b = 16
+N = 1
+#B = C/b = 64 
+#S = B/N = 64 
+
+set = log2(S) = 6 bits
+
+?? it will execute spatial locality since we are fetching 4 words per block/set
+
+10 loops 
+0x55aa1 000
+0x55aa1 001
+0x55aa1 002
+0x55aa1 003
+0x55aa1 004
+0x55aa1 005
+0x55aa1 006
+0x55aa1 007
+0x55aa1 008
+0x55aa1 009
+
+each block is 16 bytes
+we only need to store 10 bytes hence we are only fetching 1 new block
+miss rate = 1/10 = 10%
+1-1/10 = 9/10 hit rate
+
+0x55aa1 00A 0000 1000
+0x55aa1 00B
+0x55aa1 00C
+0x55aa1 00D
+0x55aa1 00E
+0x55aa1 00F
+0x55aa1 010
+0x55aa1 011
+0x55aa1 012
+0x55aa1 013
+0x55aa1 014
+0x55aa1 015
+0x55aa1 016
+0x55aa1 017
+0x55aa1 014
+0x55aa1 015
+
+0x55aa1 016
+...
+
+if we were to go over the set bits for the adress we would eventually see the same set but now we are only seeing new sets
+each block is 16 bytes and we are storing 30 bytes so we need 2 new blocks/sets
+2/30 = 1/15 = 6.7% miss rate
+
+1-1/15 = 14/15 hit rate
+
+4.
+
+32 bit
+
+C = 512
+b = 8
+N = 1
+#B = C/b = 512/8 = 64
+#S = 64
+
+set = log2(64) = 6
+
+note: 0x0004
+
+?? a) spatial locality since each block contains 2 words
+b)
+
+0x00400000 + 100 (0110 0100) =
+0x00400064
+
+non repeating sets, every 8 bytes we need a new block
+each instruction is 4 bytes we grab 2 instructions per block
+7 instructions, we need 4 blocks
+we do xor and jr once then the rest 5*100 times = 500+2
+
+4/502 = miss rate
+
+
+5.
+
+C = 16384
+b = 16
+N = 2
+B = C/b = 16384/16 = 1024
+S = B/N = 1024/2 = 512
+
+set size = log2(S) = 9
+byte offset = 2
+tag size = 32 - 11 = 21
+
+block size 16
+4 words per block
+
+
+
+i)
+
+1. 0001 0(000 0100 00)00 = 0x10
+2. 0010 0(000 0100 01)00 = 0x11
+3. 0011 0(000 0100 10)00 = 0x12
+4. 0001 0(000 0100 01)00 = 0x11
+5. 0101 0(000 0100 11)00 = 0x13
+6. 0011 0(000 0100 00)00 = 0x10
+
+ii)
+
+1. 0x00001 + 0(2) = 0x2
+2. 0x3
+3. 0x6
+4. 0x2
+5. 0xA
+6. 0x6
+
+iii)
+
+1. miss
+2. miss
+3. miss
+4. hit
+5. miss
+6. hit
+
+
+6.
+
+a) False, write-through does that but not write-back 
+b) True
+c) True
+d) False, they do so because reading through large caches takes time
