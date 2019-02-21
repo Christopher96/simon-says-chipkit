@@ -1,7 +1,7 @@
 
 .text
 
-addi 	$a0, $a0, 8	# int n = input
+addi 	$a0, $a0, 7	# int n = input
 beq	$a0, $0, done	# i == 0?
 
 addi	$a1, $a1, 1	# int multiplier = 1
