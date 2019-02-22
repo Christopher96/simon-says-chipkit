@@ -1,15 +1,35 @@
 #include <stdio.h>
 
-void print_binary(int bin) {
+typedef enum { OUTPUT, INPUT } Pinmode;
+typedef enum { LOW, HIGH } Signal;
+
+
+void pinFromToMode(int *port, int from, int to, Pinmode md) {
+    int numbits = to-from;
+
+    if(numbits < 0) return; // invalid range
+
+    int mask = (md == INPUT) ? ~0 : 0;
+
+    mask = ~((mask >> numbits) << numbits);
+    mask <<= from;
+
+    *port = mask;
+    print_binary_full(*port);
+}
+
+void print_bin(int bin, int full) {
     int max = 32;
     char str[max];
-    int i = 0;
+    int i = (full) ? max : 0;
 
-    while(bin >> i) {
-        i++;
+    if(!full) {
+        while(bin >> i) {
+            i++;
+        }
     }
 
-    str[i] = '\0';
+    str[(full) ? max : i] = '\0';
 
     while(i > 0) {
         i -= 1;
@@ -21,10 +41,18 @@ void print_binary(int bin) {
         bin >>= 1;
     }
 
-    printf("%s", str);
+    printf("%s\n", str);
+}
+
+void print_binary_full(int bin) {
+    print_bin(bin, 1);
+}
+
+void print_binary(int bin) {
+    print_bin(bin, 0);
 }
 
 int main() {
-    int bin = 10;
-    print_binary(bin);
+    int port = 123;
+    pinFromToMode(&port, 5, 10, OUTPUT); 
 }
