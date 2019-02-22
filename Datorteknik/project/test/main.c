@@ -1,8 +1,8 @@
 #include "header.h"
 
-#include <stddef.h>   /* Declarations of integer sizes and the like, part 1 */
-#include <stdint.h>   /* Declarations of integer sizes and the like, part 2 */
-#include <pic32mx.h>  /* Declarations of system-specific addresses etc */
+#include <stddef.h> 
+#include <stdint.h> 
+#include <pic32mx.h>
 
 void u32init(void);
 void display_init(void);
