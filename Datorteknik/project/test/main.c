@@ -1,10 +1,4 @@
-/* main.c
-
-   This file written 2015 by F Lundevall and David Broman
-
-   Latest update 2015-09-15 by David Broman
-
-   For copyright and licensing, see file COPYING */
+#include "header.h"
 
 #include <stddef.h>   /* Declarations of integer sizes and the like, part 1 */
 #include <stdint.h>   /* Declarations of integer sizes and the like, part 2 */
@@ -22,6 +16,20 @@ void init(void);
 int main() {
     init();
 
+    initlcd();
+    lcdprintstring("hello world");
+
+    return 0;
+
+    TRISECLR = pinsMode(3, 5);
+    print_bin_row(0, pinRead(PORTE, 3));
+    PORTE = pinsMode(3, 5);
+    pinSetMode(&PORTE, 7, (1==1));
+    int res = pinsRead(PORTE, 0, 7);
+    print_bin_row(1, res);
+
+    display_update();
+
     char* text;
     int switches;
 
@@ -35,7 +43,6 @@ int main() {
 
         delay(10);
     }
-    return 0;
 }
 
 void init() {
@@ -43,34 +50,4 @@ void init() {
     display_init();
 }
 
-void delay(int ms) {
-    int c = 4711;
-    for(int i = 0; i < ms; i++)
-        for(int j = c; j > 0; j--)
-            ;
-}
 
-void print_binary(int bin) {
-    int max = 32;
-    char str[max];
-    int i = 0;
-
-    while(bin >> i) {
-        i++;
-    }
-
-    str[i] = '\0';
-
-    while(i > 0) {
-        i -= 1;
-        if(bin & 1) {
-            str[i] = '1';
-        } else {
-            str[i] = '0';
-        }
-        bin >>= 1;
-    }
-
-    display_string(0, str);
-    display_update();
-}
