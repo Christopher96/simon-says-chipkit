@@ -10,7 +10,23 @@ typedef enum { INSTR, DATA } Mode;
 #define RW  12   // a4
 #define E   10   // a3 
 
-char lcdread(mode md) {
+void delaymicros(int micros) {
+    if(micros > 1000) {             // avoid timer overflow
+        delaymicros(1000);
+        delaymicros(micros-1000);
+    } else if (micros > 6) {
+        TMR1 = 0;                   // reset timer to 0
+        /* T1CONbits.ON = 1;           // turn timer on */
+        T1CON = ~0;
+        PR1 = (micros-6)*20;        // 20 clocks per microsecond. Overhead ~6 us
+        /* IFS0bits.T1IF = 0;          // clear overflow flag */
+        IFSSETCLR(0) = pinMode(1);
+        /* while(!IFS0bits.T1IF);      // wait until overflag is set */
+        while(!pinRead(IFS(0), 1));      // wait until overflag is set
+    }
+}
+
+char lcdread(Mode md) {
     char c;
 
     /* TRISE = 0xFFFF;                 // set port E 0-7 as input */
@@ -36,7 +52,7 @@ void lcdbusywait(void) {
     } while(state & 0x80);          // repeat until busy flag is clear
 }
 
-char lcdwrite(char val, mode md) {
+char lcdwrite(char val, Mode md) {
     /* TRISE = 0xFF00;                 // set port E 0-7 as output */
     TRISECLR = pinsMode(0, 7);
     /* PORTCbits.RC14 = (md == DATA);  // set instruction to data mode */
@@ -54,7 +70,7 @@ char lcdwrite(char val, mode md) {
 
 char lcdprintstring(char *str) {
     while(*str != 0) {              // loop until null terminator
-        lcdwrite(*str.DATA);        // print this character
+        lcdwrite(*str, DATA);        // print this character
         lcdbusywait();
         str++;                      // advance pointer to next char
     }
