@@ -1,0 +1,2 @@
+game.c.o: game.c header.h /opt/mcb32tools/include/pic32mx.h
+game.c header.h /opt/mcb32tools/include/pic32mx.h :

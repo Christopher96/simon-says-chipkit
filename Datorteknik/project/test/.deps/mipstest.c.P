@@ -1,2 +1,0 @@
-mipstest.c.o: mipstest.c
-mipstest.c :

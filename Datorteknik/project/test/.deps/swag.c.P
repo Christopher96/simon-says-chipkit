@@ -1,2 +1,0 @@
-swag.c.o: swag.c header.h
-swag.c header.h :
