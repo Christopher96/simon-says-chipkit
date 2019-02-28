@@ -4,15 +4,6 @@
 
 typedef enum { INSTR, DATA } Mode;
 
-
-
-// PORT F
-#define RS  2 // 0
-#define RW  3 // 1
-
-// PORT D
-#define E   8 // 2
-
 char lcdread(Mode md) {
     char c;
 
@@ -26,9 +17,7 @@ char lcdread(Mode md) {
     PORTDSET = pinMode(E);                 // enable on
     delaymicros(10);                        // wait for response
     /* c = PORTE & 0x00FF;             // read a byte from port E */
-    print_binary_row(0, PORTE);
     c = pinReadFT(PORTE, 0, 7);              // read byte from port E
-    print(0, c);
     /* PORTCbits.RC15 = 0;             // turn off enable */
     PORTDCLR = pinMode(E);                  // enable off
     delaymicros(10);                        // wait for response

@@ -2,7 +2,7 @@
 
 #include "header.h"
 
-#define TMR2PERIOD ((80000000 / 256) / 10000)
+#define TMR2PERIOD ((80000000 / 256) / 10)  // 80 MHz / 256 / 100 for 1/100 sec
 #if TMR2PERIOD > 0xFFFF
 #error "Timer period is to big"
 #endif
@@ -20,14 +20,17 @@ int readTimer(int timer) {
 void resetTimer(int timer)  {
     switch(timer) {
         case 1:
-            TMR1 = 0x0;         // Clear contents of timer 1
-            T1CON = 0xFFFF;        // Reset control register timer 1
+            TMR1 = 0x0;                     // Clear contents of timer 1
+            T1CON = 0x0;                    // Reset control register timer 1
             break;
         case 2:
             T2CON = 0x0;        
             TMR2 = 0x0;
             T2CON = 0x70;                   // 1:256 prescale
-            PR2 = TMR2PERIOD;
+            PR2 = TMR2PERIOD;               // See constant
+            IPCSET(2) = 0x0000000C;         // Set priority level = 3
+            IPCSET(2) = 0x00000001;         // Set subpriority level = 1
+            IECSET(0) = 0x100;              // Enable timer interrupts
             enable_interrupts();
             break;
     }
@@ -47,12 +50,23 @@ void startTimer(int timer) {
 
     }
 }
-void delayms(int ms) {
-    while(!readTimer(2));
-    clearTimer(2);
-    ms--;
-    if(ms > 0) {
-        delayms(ms);
+
+void pauseTimer(int timer) {
+    switch(timer) {
+        case 1:
+            T1CON = 0;
+            break;
+        case 2:
+            T2CON = 0;
+            break; 
+
+    }
+}
+
+void user_isr( void ) {
+    if(readTimer(2)) {
+        clearTimer(2);
+        fixedUpdate();
     }
 }
 

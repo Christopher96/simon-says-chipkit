@@ -18,11 +18,6 @@ void init(void);
 // PORT D
 #define E   8
 
-void user_isr( void ) {
-    print(1, "hell0");
-}
-
-
 int main() {
 
     init();
@@ -30,20 +25,14 @@ int main() {
     resetTimer(2);
     startTimer(2);
 
-    int count = 0;
-    int leds = pinModeFT(0, 7);
-    TRISECLR = leds;
-    while(1) {
-        delayms(100);
-        PORTE = count;
-        count++;
-        print(0, itoaconv(count));
-    }
+    initGame();
+    return 0;
 
     initlcd();
     char* msg = "swag";
     lcdprintstring(msg);
     return 0;
+
 
     char* text;
     int switches;

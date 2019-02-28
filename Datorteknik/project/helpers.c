@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
 #include "header.h"
 
 int pinMode(int pin) {
@@ -36,6 +40,21 @@ int pinReadFT(int val, int from, int to) {
     return val & pinMask(from, to);
 }
 
+int pinModeAll(int n_args, ...) {
+    va_list ap;
+    va_start(ap, n_args);
+
+    int pin = 0;
+    int mask = 0;
+    for(int i = 0; i < n_args; i++) {
+        pin = va_arg(ap, int);
+        mask |= (1 << pin);
+    }
+
+    va_end(ap);
+    return mask;
+}
+
 
 void delay(int ms) {
     int c = 4711;
@@ -49,11 +68,11 @@ void print(int row, char* msg) {
     display_update();
 }
 
-void print_binary(int bin) {
-    print_binary_row(0, bin);
+void printBinary(int bin) {
+    printBinaryRow(0, bin);
 }
 
-void print_binary_row(int row, int bin) {
+void printBinaryRow(int row, int bin) {
     int max = 32;
     char str[max];
     int i = 1;
@@ -76,4 +95,11 @@ void print_binary_row(int row, int bin) {
 
     display_string(row, str);
     display_update();
+}
+
+unsigned long int next = 1;
+
+int rand(void) {
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next/65536) % 32768;
 }
