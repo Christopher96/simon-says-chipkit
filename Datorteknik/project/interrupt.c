@@ -63,6 +63,13 @@ void pauseTimer(int timer) {
     }
 }
 
+void enableChangeNotification() {
+    int cn_pins = pinModeAll(4, CN_BLUE, CN_GREEN, CN_RED, CN_YELLOW);
+    CNENSET = cn_pins;
+    CNPUESET = cn_pins;
+    CNCON = pinModeAll(2, 11, 15);
+}
+
 void user_isr( void ) {
     if(readTimer(2)) {
         clearTimer(2);

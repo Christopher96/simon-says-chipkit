@@ -3,6 +3,8 @@
 #include <stdint.h> 
 #include <pic32mx.h>
 
+#include "header.h"
+
 void u32init(void);
 void display_init(void);
 void display_string(int line, char *s);
@@ -26,6 +28,17 @@ int main() {
     startTimer(2);
 
     initGame();
+
+    return 0;
+    enableChangeNotification();
+
+    int led_btns = pinModeAll(4, B_BLUE, B_GREEN, B_RED, B_YELLOW);
+    TRISDSET = led_btns;
+
+    while(1) {
+        printBinaryRow(0, IFS(1));
+        printBinaryRow(1, IFS(0));
+    }
     return 0;
 
     initlcd();
