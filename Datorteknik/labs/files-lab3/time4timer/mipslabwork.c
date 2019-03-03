@@ -112,6 +112,7 @@ void labwork( void ) {
     }
 
     if(IFS(0) & 0x00000100) {
+        display_debug(IFS(0));
         update();
     }
 }
