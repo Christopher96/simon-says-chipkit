@@ -5,7 +5,6 @@
 #include <pic32mx.h>  
 
 const int leds[] = { BLUE, GREEN, RED, YELLOW };
-const int btns[] = { B_BLUE, B_GREEN, B_RED, B_YELLOW };
 const int n_leds = sizeof(leds) / sizeof(leds[0]);
 
 char* current_led;
@@ -31,6 +30,9 @@ int state_toggle = 0;
 int pressed = 0;
 
 void initGame() {
+    int r = rand();
+    srand(r);
+
     // Create LED pin mask
     led_pins = pinModeAll(n_leds, BLUE, GREEN, RED, YELLOW);
 
