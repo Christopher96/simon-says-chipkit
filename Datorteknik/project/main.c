@@ -21,6 +21,7 @@ int main() {
     char* msg = "floss swag";
     lcdprintstring(msg);
     return 0;
+<<<<<<< HEAD
 
     int count = 0;
     while(1) {
@@ -36,6 +37,12 @@ int main() {
         printBinaryRow(1, IFS(0));
     }
     return 0;
+=======
+    initlcd();
+    char* msg = "swag";
+    lcdprintstring(msg);
+    return 0;
+>>>>>>> da7ab58dfbecf5d8faa8d668ad12f84311d93f92
 }
 
 void init() {

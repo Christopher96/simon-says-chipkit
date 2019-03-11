@@ -29,6 +29,9 @@ int state_toggle = 0;
 int pressed = 0;
 
 void initGame() {
+    int r = rand();
+    srand(r);
+
     // Create LED pin mask
     led_pins = pinModeAll(n_leds, BLUE, GREEN, RED, YELLOW);
 
