@@ -13,53 +13,29 @@ void display_update(void);
 void print_binary(int bin);
 void init(void);
 
-// PORT F
-#define RS  2
-#define RW  3
-
-// PORT D
-#define E   8
-
 int main() {
 
     init();
 
-    resetTimer(2);
-    startTimer(2);
+    initlcd();
+    char* msg = "floss swag";
+    lcdprintstring(msg);
+    return 0;
 
-    initGame();
+    int count = 0;
+    while(1) {
+        print(0, itoaconv(count));
+        count++;
+    }
 
     return 0;
-    enableChangeNotification();
-
-    int led_btns = pinModeAll(4, B_BLUE, B_GREEN, B_RED, B_YELLOW);
-    TRISDSET = led_btns;
+    initGame();
 
     while(1) {
         printBinaryRow(0, IFS(1));
         printBinaryRow(1, IFS(0));
     }
     return 0;
-
-    initlcd();
-    char* msg = "swag";
-    lcdprintstring(msg);
-    return 0;
-
-
-    char* text;
-    int switches;
-
-    TRISD = 0xFF00; // set RD[7:0] to output and RD[11:8] to input
-
-    while(1) {
-        switches = (PORTD >> 8) && 0xF;  // Read and mask switches from RD[11:8]
-        PORTD = switches;                // display on the LEDs
-        
-        print_binary(PORTD);
-
-        delay(10);
-    }
 }
 
 void init() {

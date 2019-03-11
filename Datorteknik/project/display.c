@@ -8,25 +8,26 @@ char lcdread(Mode md) {
     char c;
 
     /* TRISE = 0xFFFF;                 // set port E 0-7 as input */
-    TRISE = pinModeFT(0, 7);                 // set pins 0-7 on E to input
+    TRISESET = pinModeFT(0, 7);                 // set pins 0-7 on E to input
     /* PORTCbits.RC14 = (md == DATA);  // set instruction to data mode */
-    pinSetMode(&PORTF, RS, md == DATA);     // instruction or data mode?
+    pinSetMode(&PORTD, RS, md == DATA);     // instruction or data mode?
     /* PORTCbits.RC13 = 1;             // read mode */
-    PORTFSET = pinMode(RW);                 // read mode
+    PORTDSET = pinMode(RW);                 // read mode
     /* PORTCbits.RC15 = 1;             // pulse enable */
     PORTDSET = pinMode(E);                 // enable on
-    delaymicros(10);                        // wait for response
+    delaymicros(1000);                        // wait for response
     /* c = PORTE & 0x00FF;             // read a byte from port E */
     c = pinReadFT(PORTE, 0, 7);              // read byte from port E
     /* PORTCbits.RC15 = 0;             // turn off enable */
     PORTDCLR = pinMode(E);                  // enable off
-    delaymicros(10);                        // wait for response
+    delaymicros(1000);                        // wait for response
 }
 
 void lcdbusywait(void) {
     char state;
     do {
         state = lcdread(INSTR);     // read instruction
+        printBinaryRow(1, state);
     } while(state & 0x80);          // repeat until busy flag is clear
 }
 
@@ -34,16 +35,15 @@ char lcdwrite(char val, Mode md) {
     /* TRISE = 0xFF00;                 // set port E 0-7 as output */
     TRISECLR = pinModeFT(0, 7);              // set pins 0-7 on E to output
     /* PORTCbits.RC14 = (md == DATA);  // set instruction to data mode */
-    pinSetMode(&PORTF, RS, md == DATA);     // instruction or data mode?
-    /* PORTCbits.RC13 = 0;             // write mode */
-    PORTFCLR = pinMode(RW);                 // write mode
+    pinSetMode(&PORTD, RS, md == DATA);     // instruction or data mode?
+    PORTDCLR = pinMode(RW);                 // write mode
     PORTE = val;                            // write a character
     /* PORTCbits.RC15 = 1;             // pulse enable */
     PORTDSET = pinMode(E);                  // enable on
-    delaymicros(10);                        // wait for response
+    delaymicros(1000);                        // wait for response
     /* PORTCbits.RC15 = 0;             // turn off enable */
     PORTDCLR = pinMode(E);                  // enable off
-    delaymicros(10);                        // wait for response
+    delaymicros(1000);                        // wait for response
 }
 
 char lcdprintstring(char *str) {
@@ -56,25 +56,21 @@ char lcdprintstring(char *str) {
 
 void lcdclear(void) {
     lcdwrite(0x01, INSTR);                  // clear display
-    delaymicros(1530);                      // wait for execution
+    delaymicros(15300);                      // wait for execution
 }
 
 void initlcd(void) {
     // set LCD control pins
-    /* TRISC = 0x1FFF;                 // set port C 13-15 to output and other to input */
-    TRISFCLR = pinModeFT(RS, RW);           // set RS and RW to output
-    TRISDCLR = pinMode(E);                  // and E as well
-    /* PORTC = 0x0000;                 // turn off all controls */
-    PORTF = 0x0;                            // turn off controls
-    PORTD = 0x0;
+    TRISDCLR = pinModeAll(3, RS, RW, E);    // set controls to output
+    PORTDCLR = pinModeAll(3, RS, RW, E);    // turn off controls
 
     print(3, "sending");
     // send instructions to initialize the display
-    delaymicros(15000);
+    delaymicros(150000);
     lcdwrite(0x30, INSTR);                  // 8 bit mode
-    delaymicros(4100);
+    delaymicros(41000);
     lcdwrite(0x30, INSTR);                  // 8 bit mode
-    delaymicros(100);
+    delaymicros(1000);
     lcdwrite(0x30, INSTR);                  // 8 bit mode
     print(3, "waiting");
     lcdbusywait();

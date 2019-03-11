@@ -5,13 +5,11 @@
 #include <pic32mx.h>  
 
 const int leds[] = { BLUE, GREEN, RED, YELLOW };
-const int btns[] = { B_BLUE, B_GREEN, B_RED, B_YELLOW };
 const int n_leds = sizeof(leds) / sizeof(leds[0]);
 
 char* current_led;
 
 int led_pins;
-int led_btns;
 
 typedef enum { EXIT, IDLE, PLAYER, LEVEL_UP, GAME_OVER, SIMON, READY } State;
 State state;

@@ -83,16 +83,10 @@ void delaymicros(int micros) {
         delaymicros(micros-1000);
     } else if (micros > 6) {
 
-        TMR1 = 0;                           // reset timer
-        T1CON = 0xFFFF;
-        PR1 = (micros-6)*100;                // 20 clocks per microsecond. Overhead ~6 us
-        IFSCLR(0) = 0x10;
-        /* clearTimer(1); */
-        /* T1CONbits.ON = 1;           // turn timer on */
-        /* resetTimer(1);                      // reset timer */
-        /* startTimer(1);                      // start timer */
-        /* IFS0bits.T1IF = 0;          // clear overflow flag */
-        /* while(!IFS0bits.T1IF);           // wait until overflag is set */
-        while(!(IFS(0) & 0x10));               // check if timer flag has been set
+        resetTimer(1);
+        PR1 = (micros-6)*20;               // 20 clocks per microsecond. Overhead ~6 us
+        startTimer(1);
+
+        while(!readTimer(1));               // check if timer flag has been set
     }
 }

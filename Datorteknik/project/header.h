@@ -15,21 +15,16 @@ typedef enum { LOW, HIGH } Signal;
 // PORT F
 #define BTN1        1
 
-#define RS          2       // 0
-#define RW          3       // 1
-
 // PORT D
-#define E           8       // 2
 
-#define BLUE        1       // 5
-#define GREEN       2       // 6
-#define RED         9       // 7
-#define YELLOW      10      // 8
+#define BLUE        0       // 3
+#define GREEN       1       // 5
+#define RED         2       // 6
+#define YELLOW      9       // 7
 
-#define B_BLUE      5       // 34
-#define B_GREEN     11      // 35
-#define B_RED       6       // 36
-#define B_YELLOW    7       // 37
+#define RS          10      // 8
+#define RW          3       // 9
+#define E           4       // 10
 
 // Change notification
 #define CN_BLUE     14
