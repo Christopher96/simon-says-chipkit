@@ -6,7 +6,7 @@
 
 #define EEPROM_SLAVE_ADDR 0x50
 #define SEED_ADDR 0xFF
-#define HIGHSCORES_ADDR 0x30
+#define HIGHSCORES_ADDR 0x00
 #define HIGHSCORE_SIZE 5
 #define HIGHSCORES_MAX HIGHSCORE_SIZE * 10 + HIGHSCORE_SIZE
 
@@ -70,7 +70,7 @@ void i2c_stop() {
 	i2c_idle();
 }
 
-void i2c_control(int address, int rw) {
+void i2c_control(uint16_t address, bool rw) {
 	do {
 		i2c_start();
 	} while(!i2c_send((EEPROM_SLAVE_ADDR << 1) | rw));
@@ -85,41 +85,21 @@ void initEEprom(void) {
 	I2C1STAT = 0x0;
 	I2C1CONSET = 1 << 13; //SIDL = 1
 	I2C1CONSET = 1 << 15; // ON = 1
-
-    /* uint8_t tmp = 0; */
-    /*  */
-    /* print(0, "write"); */
-    /* i2c_control(EEPROM_SLAVE_ADDR, EEPROM_WRITE); */
-    /* print(0, "top addr"); */
-    /* while(!i2c_send(0x00)); */
-    /* print(0, "bottom addr"); */
-    /* while(!i2c_send(0x00)); */
-    /* print(0, "read"); */
-    /* i2c_control(EEPROM_SLAVE_ADDR, EEPROM_READ); */
-    /* print(0, "receive"); */
-    /* tmp = i2c_recv(); */
-    /* print(0, "nack"); */
-    /* i2c_nack(); */
-    /* print(0, "stop"); */
-    /* i2c_stop(); */
-    /* print(0, "done"); */
-    /* print(1, itoaconv(tmp)); */
-
 }
 
-void writeEEprom(short address, char data) {
+void writeEEprom(uint16_t address, uint8_t data) {
     i2c_control(EEPROM_SLAVE_ADDR, EEPROM_WRITE);
-    while(!i2c_send((address & 0xFF00) >> 8));
+    while(!i2c_send(address >> 8));
     while(!i2c_send(address & 0xFF));
     while(!i2c_send(data));
     i2c_stop();
 }
 
-char* readEEpromBytes(short address, int n_bytes) {
-    char data[n_bytes-1];
+uint8_t* readEEpromBytes(uint16_t address, int n_bytes) {
+    uint8_t data[n_bytes-1];
 
     i2c_control(EEPROM_SLAVE_ADDR, EEPROM_WRITE);
-    while(!i2c_send((address & 0xFF00) >> 8));
+    while(!i2c_send(address >> 8));
     while(!i2c_send(address & 0xFF));
 
     i2c_control(EEPROM_SLAVE_ADDR, EEPROM_READ);
@@ -134,13 +114,13 @@ char* readEEpromBytes(short address, int n_bytes) {
     return data;
 }
 
-void newHighscore(char name[4], char new_score) {
-    char* highScores = readEEpromBytes(HIGHSCORES_ADDR, HIGHSCORES_MAX);
-    char lowest_score = new_score;
-    char lowest_index = -1;
+void newHighscore(uint8_t name[4], uint8_t new_score) {
+    uint8_t* highScores = readEEpromBytes(HIGHSCORES_ADDR, HIGHSCORES_MAX);
+    uint8_t lowest_score = new_score;
+    uint8_t lowest_index = -1;
 
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE) {
-        char score = highScores[i+4];
+        uint8_t score = highScores[i+4];
         if(score < lowest_score) {
             lowest_index = i;
         }
@@ -148,20 +128,18 @@ void newHighscore(char name[4], char new_score) {
 
     if(lowest_index != -1) {
         for (int i = 0; i < HIGHSCORE_SIZE; i++) {
-            char address = HIGHSCORES_ADDR + lowest_index + i;
+            uint16_t address = HIGHSCORES_ADDR + lowest_index + i;
             writeEEprom(address, (i < HIGHSCORE_SIZE) ? name[i] : new_score);
         }
     }
-}
+    }
 
 void resetHighscores() {
-    for (int i = 0; i < HIGHSCORES_MAX; i++) {
-        writeEEprom(HIGHSCORES_ADDR+i, 0x0);
-    }
+    writeEEprom(, 0x0);
 }
 
 void getHighscores() {
-    char* highScores = readEEpromBytes(HIGHSCORES_ADDR, HIGHSCORES_MAX);
+    uint8_t* highScores = readEEpromBytes(HIGHSCORES_ADDR, HIGHSCORES_MAX);
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE){
         for(int j = 0; j < 3; j++) {
             print(j, itoaconv(highScores[i+j]));
@@ -178,3 +156,4 @@ void getHighscores() {
         delay(1000);
     }
 }
+
