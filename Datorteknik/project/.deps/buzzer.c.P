@@ -1,0 +1,2 @@
+buzzer.c.o: buzzer.c header.h /opt/mcb32tools/include/pic32mx.h
+buzzer.c header.h /opt/mcb32tools/include/pic32mx.h :

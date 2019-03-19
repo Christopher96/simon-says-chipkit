@@ -22,13 +22,12 @@ typedef enum { LOW, HIGH } Signal;
 #define RED         2       // 6
 #define YELLOW      9       // 7
 
-<<<<<<< HEAD
-#define RS          10      // 8
-#define RW          3       // 9
-#define E           4       // 10
+#define PWM         3       // 9
 
-=======
->>>>>>> da7ab58dfbecf5d8faa8d668ad12f84311d93f92
+#define E           5       // 34
+#define RW          6       // 36
+#define RS          7       // 37
+
 // Change notification
 #define CN_BLUE     14
 #define CN_GREEN    15

@@ -17,32 +17,24 @@ int main() {
 
     init();
 
+    initEEprom();
+
+    resetHighscores();
+    getHighscores();
+    return 0;
+    initBuzzer();
+    initGame();
+    
     initlcd();
-    char* msg = "floss swag";
+    char* msg = "fuck you cunt";
     lcdprintstring(msg);
     return 0;
-<<<<<<< HEAD
-
-    int count = 0;
-    while(1) {
-        print(0, itoaconv(count));
-        count++;
-    }
-
-    return 0;
-    initGame();
 
     while(1) {
         printBinaryRow(0, IFS(1));
         printBinaryRow(1, IFS(0));
     }
     return 0;
-=======
-    initlcd();
-    char* msg = "swag";
-    lcdprintstring(msg);
-    return 0;
->>>>>>> da7ab58dfbecf5d8faa8d668ad12f84311d93f92
 }
 
 void init() {

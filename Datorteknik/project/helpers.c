@@ -14,7 +14,7 @@ void pinSetMode(volatile int* port, int pin, Pinmode md) {
     if(md == INPUT) {
         *port |= bit; 
     } else {
-        *port ^= bit;
+        *port &= ~bit;
     }
 }
 

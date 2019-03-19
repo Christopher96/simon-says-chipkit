@@ -29,6 +29,9 @@ int state_toggle = 0;
 int pressed = 0;
 
 void initGame() {
+    resetTimer(2);
+    startTimer(2);
+
     int r = rand();
     srand(r);
 
@@ -39,6 +42,8 @@ void initGame() {
     TRISFSET = pinMode(BTN1);
 
     switchState(IDLE);
+
+    TRISFSET = pinMode(BTN1);
 
     while(state != EXIT)
         update();
@@ -163,11 +168,17 @@ void switchState(State new_state) {
     state = new_state;
 }
 
+int freq[] = {100, 500, 1000, 1500, 2000, 2500, 3000, 4000};
+int freq_count = 0;
+
 void update() {
     if(pressed == -1) {
         if(pinRead(PORTF, BTN1)) {
-            switchState(state_toggle ? SIMON : IDLE);
-            state_toggle = (state_toggle) ? 0 : 1;
+            freq_count++;
+            print(1, itoaconv(freq_count));
+            print(2, itoaconv(freq[freq_count]));
+            /* switchState(state_toggle ? SIMON : IDLE); */
+            /* state_toggle = (state_toggle) ? 0 : 1; */
             pressed = 1;
         }
     }
@@ -216,8 +227,8 @@ void update() {
             break;
     }
 
-    print(0, state_txt);
-    print(1, state_info);
+    /* print(0, state_txt); */
+    /* print(1, state_info); */
 }
 
 

@@ -33,6 +33,11 @@ void resetTimer(int timer)  {
             IECSET(0) = 0x100;              // Enable timer interrupts
             enable_interrupts();
             break;
+        case 3:
+            TMR3 = 0x0;
+            T3CON = 0x0;
+            T3CONSET = 0x30;
+            PR3 = 4096;
     }
     clearTimer(timer); 
 }
@@ -47,7 +52,8 @@ void startTimer(int timer) {
         case 2:
             T2CONSET = pin;
             break; 
-
+        case 3:
+            T3CONSET = pin;
     }
 }
 
@@ -82,24 +88,9 @@ void delaymicros(int micros) {
         delaymicros(1000);
         delaymicros(micros-1000);
     } else if (micros > 6) {
-
-<<<<<<< HEAD
         resetTimer(1);
-        PR1 = (micros-6)*20;               // 20 clocks per microsecond. Overhead ~6 us
+        PR1 = (micros-6)*20;                // 20 clocks per microsecond. Overhead ~6 us
         startTimer(1);
-
-=======
-        TMR1 = 0;                           // reset timer
-        T1CON = 0xFFFF;
-        PR1 = (micros-6)*100;                // 20 clocks per microsecond. Overhead ~6 us
-        IFSCLR(0) = 0x10;
-        clearTimer(1);
-        /* T1CONbits.ON = 1;           // turn timer on */
-        /* resetTimer(1);                      // reset timer */
-        /* startTimer(1);                      // start timer */
-        /* IFS0bits.T1IF = 0;          // clear overflow flag */
-        /* while(!IFS0bits.T1IF);           // wait until overflag is set */
->>>>>>> da7ab58dfbecf5d8faa8d668ad12f84311d93f92
         while(!readTimer(1));               // check if timer flag has been set
     }
 }
