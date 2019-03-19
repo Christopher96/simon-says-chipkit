@@ -21,6 +21,7 @@ int main() {
 
     resetHighscores();
     getHighscores();
+
     return 0;
     initBuzzer();
     initGame();
