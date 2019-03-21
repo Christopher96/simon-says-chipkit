@@ -14,8 +14,8 @@ void pauseBuzzer() {
     OC4CONCLR = pinMode(15);
 }
 
-/* char notes[] = "ccggaagffeeddc "; // a space represents a rest */
-char notes[] = "deeeddddffffeeedeeeddddffffeeedeee"; // a space represents a rest
+char notes[] = "ccggaagffeeddc "; // a space represents a rest
+/* char notes[] = "deeeddddffffeeedeeeddddffffeeedeee"; // a space represents a rest */
 int beats[] = { 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 4 };
 int tempo = 300;
 int length = sizeof(notes) / sizeof(notes[0]); // the number of notes

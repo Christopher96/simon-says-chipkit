@@ -17,20 +17,17 @@ int main() {
 
     init();
 
+    initlcd();
     initEEprom();
-
     resetHighscores();
+    initGame();
+    return 0;
     getHighscores();
-
     return 0;
     initBuzzer();
-    initGame();
-    
-    initlcd();
-    char* msg = "fuck you cunt";
-    lcdprintstring(msg);
-    return 0;
 
+    return 0;
+    
     while(1) {
         printBinaryRow(0, IFS(1));
         printBinaryRow(1, IFS(0));

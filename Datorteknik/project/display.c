@@ -21,7 +21,6 @@ void lcdbusywait(void) {
     char state;
     do {
         state = lcdread(INSTR);                 // read instruction
-        printBinaryRow(1, state);
     } while(state & 0x80);                      // repeat until busy flag is clear
 }
 
@@ -31,12 +30,25 @@ char lcdwrite(char val, Mode md) {
     PORTDCLR = pinMode(RW);                     // write mode
     PORTE = val;                                // write a character
     PORTDSET = pinMode(E);                      // enable on
-    delaymicros(10);                            // wait for response
+    delaymicros(1000);                            // wait for response
     PORTDCLR = pinMode(E);                      // enable off
-    delaymicros(10);                            // wait for response
+    delaymicros(1000);                            // wait for response
 }
 
-char lcdprintstring(char *str) {
+void lcdprintchar(char c) {
+    lcdwrite(c, DATA);
+    lcdbusywait();
+}
+
+void lcdprintarray(char str[]) {
+    int size = sizeof(str) / sizeof(str[0]);
+    for(int i = 0; i < size; i++) {
+        lcdwrite(str[i], DATA);                   
+        lcdbusywait();
+    }
+}
+
+void lcdprintstring(char *str) {
     while(*str != 0) {                          // iterate until null character is found
         lcdwrite(*str, DATA);                   // print character
         lcdbusywait();
@@ -45,8 +57,33 @@ char lcdprintstring(char *str) {
 }
 
 void lcdclear(void) {
-    lcdwrite(0x01, INSTR);                      // clear display
-    delaymicros(10);                            // wait for execution
+    lcdwrite(0x01, INSTR);                     
+    delaymicros(1000);
+}
+
+void lcdinstr(char val) {
+    lcdwrite(val, INSTR);
+    lcdbusywait();
+}
+
+void lcdnext(void) {
+    lcdinstr(0xC0);
+}
+
+void lcdhome(void) {
+    lcdinstr(0x02);
+}
+
+void lcdcursorleft(void) {
+    lcdinstr(0x10);
+}
+
+void lcdshowcursor(void) {
+    lcdinstr(0x0E);
+}
+
+void lcdhidecursor(void) {
+    lcdinstr(0x0C);
 }
 
 void initlcd(void) {

@@ -8,7 +8,7 @@
 #define SEED_ADDR 0xFF
 #define HIGHSCORES_ADDR 0x00
 #define HIGHSCORE_SIZE 5
-#define HIGHSCORES_MAX HIGHSCORE_SIZE * 10 + HIGHSCORE_SIZE
+#define HIGHSCORES_MAX HIGHSCORE_SIZE * 10
 
 #define EEPROM_WRITE 0
 #define EEPROM_READ 1
@@ -110,50 +110,52 @@ void readEEpromBytes(uint16_t address, uint8_t* data, int n_bytes) {
     i2c_stop();
 }
 
-void newHighscore(uint8_t* name, uint8_t new_score) {
-    uint8_t highScores[HIGHSCORES_MAX];
-    readEEpromBytes(HIGHSCORES_ADDR, highScores, HIGHSCORES_MAX);
+void checkHighscore(uint8_t new_score) {
+    uint8_t highscores[HIGHSCORES_MAX];
+    readEEpromBytes(HIGHSCORES_ADDR, highscores, HIGHSCORES_MAX);
 
     uint8_t lowest_score = new_score;
     uint8_t lowest_index = -1;
 
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE) {
-        uint8_t score = highScores[i+4];
+        uint8_t score = highscores[i+4];
         if(score < lowest_score) {
             lowest_index = i;
             lowest_score = score;
         }
     }
+    return lowest_index;
+}
 
-    print(0, name);
-    print(1, itoaconv(new_score));
-    print(2, itoaconv(lowest_index));
-    print(3, itoaconv(lowest_score));
-
-    if(lowest_index != -1) {
-        for (int i = 0; i < HIGHSCORE_SIZE; i++) {
-            uint16_t address = HIGHSCORES_ADDR + lowest_index + i;
-            writeEEprom(address, (i == 4) ? new_score : name[i]);
-        }
+void saveHighscore(int index, uint8_t new_score, char name[]) {
+    for (int i = 0; i < HIGHSCORE_SIZE; i++) {
+        uint16_t address = HIGHSCORES_ADDR + index + i;
+        writeEEprom(address, (i == 4) ? new_score : name[i]);
     }
 }
 
 void resetHighscores() {
-    for (int i = 0; i < HIGHSCORES_MAX; ++i) {
-        writeEEprom(HIGHSCORES_ADDR+i, 0xF);
+    for (int i = 0; i < HIGHSCORES_MAX; i++) {
+        writeEEprom(HIGHSCORES_ADDR+i, 0x0);
     }
 }
 
 void getHighscores() {
-    uint8_t highScores[HIGHSCORES_MAX];
-    readEEpromBytes(HIGHSCORES_ADDR, highScores, HIGHSCORES_MAX);
+    uint8_t highscores[HIGHSCORES_MAX];
+    readEEpromBytes(HIGHSCORES_ADDR, highscores, HIGHSCORES_MAX);
 
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE){
-        char name[] = "AAAA";
+        char name[4];
         for(int j = 0; j < 4; j++) {
-            name[j] = 0xF;
+            name[j] = highscores[i+j];
         }
-        print(1, itoaconv(i));
-        delay(1000);
+
+        lcdprintarray(name);
+        lcdprintchar(' ');
+        lcdprintstring(itoaconv(highscores[i+4]));
+
+        delay(2000);
+        lcdclear();
     }
 }
+
