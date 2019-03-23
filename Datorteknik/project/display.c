@@ -56,6 +56,23 @@ void lcdprintstring(char *str) {
     }
 }
 
+void printSpaces() {
+    for (int i = 0; i < 16; i++) {
+        lcdprintchar(' ');
+    }
+}
+
+void lcdprintstop(int row, char* str) {
+    lcdhome();
+    if(row == 1) lcdnext();
+    lcdprintstring(str);
+}
+
+void lcdprint(int row, char* str) {
+    lcdprintstop(row, str);
+    printSpaces();
+}
+
 void lcdclear(void) {
     lcdwrite(0x01, INSTR);                     
     delaymicros(1000);

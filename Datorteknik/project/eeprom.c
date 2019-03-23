@@ -4,15 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define EEPROM_SLAVE_ADDR 0x50
-#define SEED_ADDR 0xFF
-#define HIGHSCORES_ADDR 0x00
-#define HIGHSCORE_SIZE 5
-#define HIGHSCORES_MAX HIGHSCORE_SIZE * 10
-
-#define EEPROM_WRITE 0
-#define EEPROM_READ 1
-
 /* Wait for I2C bus to become idle */
 void i2c_idle() {
     while(I2C1CON & 0x1F || I2C1STAT & (1 << 14)); //TRSTAT
@@ -85,6 +76,8 @@ void initEEprom(void) {
     I2C1STAT = 0x0;
     I2C1CONSET = 1 << 13; //SIDL = 1
     I2C1CONSET = 1 << 15; // ON = 1
+
+    eepromSeed();
 }
 
 void writeEEprom(uint16_t address, uint8_t data) {
@@ -95,6 +88,17 @@ void writeEEprom(uint16_t address, uint8_t data) {
     i2c_stop();
 }
 
+uint8_t readEEprom(uint16_t address) {
+    i2c_control(EEPROM_SLAVE_ADDR, EEPROM_WRITE);
+    while(!i2c_send(address >> 8));
+    while(!i2c_send(address & 0xFF));
+
+    i2c_control(EEPROM_SLAVE_ADDR, EEPROM_READ);
+    uint8_t data = i2c_recv();
+    i2c_nack();
+    i2c_stop();
+    return data;
+}
 void readEEpromBytes(uint16_t address, uint8_t* data, int n_bytes) {
     i2c_control(EEPROM_SLAVE_ADDR, EEPROM_WRITE);
     while(!i2c_send(address >> 8));
@@ -110,24 +114,19 @@ void readEEpromBytes(uint16_t address, uint8_t* data, int n_bytes) {
     i2c_stop();
 }
 
-void checkHighscore(uint8_t new_score) {
+void saveHighscore(uint8_t new_score, char name[]) {
     uint8_t highscores[HIGHSCORES_MAX];
     readEEpromBytes(HIGHSCORES_ADDR, highscores, HIGHSCORES_MAX);
 
-    uint8_t lowest_score = new_score;
-    uint8_t lowest_index = -1;
+    int index = 0;
 
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE) {
-        uint8_t score = highscores[i+4];
-        if(score < lowest_score) {
-            lowest_index = i;
-            lowest_score = score;
+        if(highscores[i] == 0x0) {
+            index = i;
+            break;
         }
     }
-    return lowest_index;
-}
 
-void saveHighscore(int index, uint8_t new_score, char name[]) {
     for (int i = 0; i < HIGHSCORE_SIZE; i++) {
         uint16_t address = HIGHSCORES_ADDR + index + i;
         writeEEprom(address, (i == 4) ? new_score : name[i]);
@@ -144,18 +143,29 @@ void getHighscores() {
     uint8_t highscores[HIGHSCORES_MAX];
     readEEpromBytes(HIGHSCORES_ADDR, highscores, HIGHSCORES_MAX);
 
+    int num = 0;
     for (int i = 0; i < HIGHSCORES_MAX; i+=HIGHSCORE_SIZE){
-        char name[4];
-        for(int j = 0; j < 4; j++) {
-            name[j] = highscores[i+j];
+        int score = highscores[i+4];
+        if(score > 0) {
+            char name[4];
+            for(int j = 0; j < 4; j++) {
+                name[j] = highscores[i+j]; 
+            }
+            num++;
+            lcdclear();
+            lcdprintstring(itoaconv(num));
+            lcdprintstring(". ");
+            lcdprintarray(name);
+            lcdprintchar(' ');
+            lcdprintstring(itoaconv(highscores[i+4]));
+            delay(1000);
         }
-
-        lcdprintarray(name);
-        lcdprintchar(' ');
-        lcdprintstring(itoaconv(highscores[i+4]));
-
-        delay(2000);
-        lcdclear();
     }
 }
 
+void eepromSeed() {
+    uint8_t seed = readEEprom(SEED_ADDR);
+    seed = (uint8_t) rand();
+    srand((int) seed);
+    writeEEprom(SEED_ADDR, seed);
+}

@@ -3,8 +3,8 @@
 #include <pic32mx.h>  
 
 void playBuzzer() {
-    OC4R = 4096;                                // Load initial value into duty cycle register
-    OC4RS = 4096;                               // When a period finishes the contents of OC1RS is loaded to OC1R;
+    OC4R = 2048;                                // Load initial value into duty cycle register
+    OC4RS = 2048;                               // When a period finishes the contents of OC1RS is loaded to OC1R;
     OC4CONSET = pinMode(15);
 }
 
@@ -14,13 +14,22 @@ void pauseBuzzer() {
     OC4CONCLR = pinMode(15);
 }
 
+void playTone(int freq, int duration) {
+    resetTimer(3);
+    PR3 = freq;
+    startTimer(3);
+    playBuzzer();
+    delay(duration);
+    pauseBuzzer();
+}
+
 char notes[] = "ccggaagffeeddc "; // a space represents a rest
 /* char notes[] = "deeeddddffffeeedeeeddddffffeeedeee"; // a space represents a rest */
 int beats[] = { 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 4 };
 int tempo = 300;
 int length = sizeof(notes) / sizeof(notes[0]); // the number of notes
 
-void playTone(int tone, int duration) {
+void playTon(int tone, int duration) {
     for (long i = 0; i < duration * 1000L; i += tone * 2) {
         playBuzzer();
         delaymicros(tone);
@@ -57,7 +66,7 @@ void initBuzzer() {
     resetTimer(3);
     OC4CON = 0xE;                                       // Set Timer3 as source | enable pwm mode without fault protection
     startTimer(3);
-    while(1) {
-        loop();
-    }
+    /* while(1) { */
+    /*     loop(); */
+    /* } */
 }

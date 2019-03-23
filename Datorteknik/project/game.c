@@ -4,17 +4,15 @@
 #include <stdlib.h>
 #include <pic32mx.h>  
 
-const int leds[] = { BLUE, GREEN, RED, YELLOW };
+const int leds[] = { YELLOW, BLUE, RED, GREEN };
 const int n_leds = sizeof(leds) / sizeof(leds[0]);
-
-char* current_led;
 
 int led_pins;
 
-typedef enum { EXIT, MAIN_MENU, PLAYER, LEVEL_UP, GAME_OVER, SIMON, READY, NEW_HIGHSCORE, NEW_GAME } State;
+typedef enum { EXIT, MAIN_MENU, PLAYER, LEVEL_UP, GAME_OVER, SIMON, READY, NEW_HIGHSCORE, HIGHSCORES, RESET} State;
 State state;
 
-int game_level = 1;
+int current_score = 0;
 int count = 0;
 
 int simon_toggle = 0;
@@ -25,15 +23,11 @@ int simon_leds_size = 0;
 #define MAX_LEDS 100
 int simon_leds[MAX_LEDS];
 
-int state_toggle = 0;
-int pressed = 0;
+int pressed = -1;
 
 void initGame() {
     resetTimer(2);
     startTimer(2);
-
-    int r = rand();
-    srand(r);
 
     // Create LED pin mask
     led_pins = pinModeAll(n_leds, BLUE, GREEN, RED, YELLOW);
@@ -49,29 +43,28 @@ void initGame() {
         update();
 }
 
-void mainMenu() {
-
-}
-void newGame() {
-
-}
-
-char* ledName(int pin) {
+void pickLed(int pin) {
+    char* led_name;
     switch(pin) {
-        case YELLOW: return "yellow";
-        case RED: return "red";
-        case GREEN: return "green";
-        case BLUE: return "blue";
+        case YELLOW:
+            led_name = "YELLOW";
+            playTone(10000, 200);
+            break;
+        case RED: 
+            led_name = "RED";
+            playTone(20000, 200);
+            break;
+        case GREEN:
+            led_name = "GREEN";
+            playTone(30000, 200);
+            break;
+        case BLUE: 
+            led_name = "BLUE";
+            playTone(40000, 200);
+            break;
     }
 }
 
-int ready_count = 5;
-
-void getReady() {
-    if(count >= ready_count) {
-        switchState(PLAYER);
-    }
-}
 
 void playerThink() {
     int count_to = 50;
@@ -81,21 +74,20 @@ void playerThink() {
     }
 }
 
-char* simon_led;
+int player_count = 0;
+
 void playerPick(int pin) {
-    current_led = ledName(pin);
-    simon_led = ledName(simon_leds[simon_leds_size]);
-    if(pin == simon_leds[simon_count]) {
+    pickLed(pin);
+    if(pin == simon_leds[player_count]) {
         count = 0;
-        if(simon_count == simon_leds_size-1) {
+        if(player_count == simon_leds_size-1) {
             switchState(LEVEL_UP);
         } else {
-            simon_count++;
+            player_count++;
         }
     } else {
         switchState(GAME_OVER);
     }
-    pressed = 1;
 }
 
 void simonThink() {
@@ -129,6 +121,7 @@ void simonThink() {
 void simonSays() {
     int pin = simon_leds[simon_count];
     turnOn(pin);
+    pickLed(pin);
     simon_count++;
 }
 
@@ -136,25 +129,62 @@ void simonPick() {
     int r = rand() % (n_leds);
     int pin = leds[r];
     turnOn(pin);
+    pickLed(pin);
 
     simon_leds[simon_leds_size] = pin;
     simon_leds_size++;
     simon_picked = 1;
 }
 
-int score_index = -1;
-int check_score = 0;
+char highscores[HIGHSCORES_MAX];
+int highscore_num = 0;
 
-void gameOver() {
-    if(check_score == 0) {
-        score_index = checkHighscore(game_level);
-        check_score = 1;
-    } else if(score_index != -1){
-        switchState(NEW_HIGHSCORE);
-    } else {
-        switchState(NEW_GAME);
+void orderHighscores() {
+    for (int i = 0; i < HIGHSCORES_MAX; i+= HIGHSCORE_SIZE) {
+        char highscore[HIGHSCORE_SIZE];
+
+        for(int k = 0; k < HIGHSCORE_SIZE; k++) {
+            highscore[k] = highscores[i+k]; 
+        }
+
+        int highest_index = i;
+        int highest_score = highscore[4];
+
+        for(int j = i+HIGHSCORE_SIZE; j < HIGHSCORES_MAX; j+= HIGHSCORE_SIZE) {
+            if(highest_score < highscores[j+4]) {
+                highest_index = j;
+                highest_score = highscores[j+4];
+            }
+        }
+
+        for(int k = 0; k < HIGHSCORE_SIZE; k++) {
+            highscores[i+k] = highscores[highest_index+k];
+        }
+        for(int k = 0; k < HIGHSCORE_SIZE; k++) {
+            highscores[highest_index+k] = highscore[k];
+        }
     }
 }
+
+void printHighscore() {
+    int i = highscore_num * HIGHSCORE_SIZE;
+
+    if(highscores[i] > 0) {
+        char name[4];
+        for(int j = 0; j < 4; j++) {
+            name[j] = highscores[i+j]; 
+        }
+        lcdclear();
+        lcdprintstring(itoaconv(highscore_num + 1));
+        lcdprintstring(". ");
+        lcdprintarray(name);
+        lcdprintchar(' ');
+        lcdprintstring(itoaconv(highscores[i+4]));
+    } else {
+        switchState(MAIN_MENU);
+    }
+}
+
 
 char name[4];
 int new_char = 0;
@@ -171,25 +201,40 @@ void newHighscore() {
             selected_char = 'A';
         }
     } else {
-        saveHighscore(score_index, game_level, name);
-        switchState(NEW_GAME);
+        saveHighscore(current_score, name);
+        switchState(MAIN_MENU);
     }
 }
 
 void turnOn(int pin) {
     PORTDSET = pinMode(pin);
-    current_led = ledName(pin);
 }
 
 void turnOffAll() {
     PORTDCLR = led_pins;
-    current_led = "";
+}
+
+void newGame() {
+    srand(rand());
+
+    simon_leds_size = 0;
+    for(int i = 0; i < MAX_LEDS; i++) {
+        simon_leds[i] = 0;
+    }
+    current_score = 0;
+
+    switchState(SIMON);
 }
 
 void switchState(State new_state) {
-    switch(state) {
+    char* state_txt = "";
+    char* state_info = "";
+
+    switch(new_state) {
         case PLAYER:
+        case HIGHSCORES:
         case NEW_HIGHSCORE:
+        case MAIN_MENU:
             // Change LED pins to input
             TRISDSET = led_pins;
             break;
@@ -199,23 +244,73 @@ void switchState(State new_state) {
             break;
     }
 
-    switch(state) {
-        case NEW_GAME:
-            score_index = 0;
-            check_score = 0;
-            game_level = 1;
+    switch(new_state) {
+        case RESET: 
+            lcdprint(0, "Reset highscores?");
+            lcdprint(1, "(R) No (G) Yes");
+            break;
+        case MAIN_MENU:
+            lcdhidecursor();
+            lcdprint(0, "Main menu");
+            lcdprint(1, "");
+            break;
+        case READY:
+            lcdprint(0, "Get ready...");
+            lcdprint(1, "");
+            break;
+        case PLAYER:
+            player_count = 0;
+            lcdprint(0, "Player says...");
+            lcdprint(1, "");
+            break;
+        case LEVEL_UP:
+            current_score++;
+            lcdprint(0, "Correct!");
+            lcdprintstop(1, "Score: ");
+            lcdprintstring(itoaconv(current_score));
+            break;
+        case GAME_OVER:
+            lcdprint(0, "Game over!");
+            lcdprintstop(1, "Score: ");
+            lcdprintstring(itoaconv(current_score));
             break;
         case SIMON:
             simon_count = 0;
             simon_toggle = 0;
             simon_picked = 0;
+            lcdprint(0, "Simon says...");
+            lcdprint(1, "");
+            break;
+        case HIGHSCORES:
+            highscore_num = 0;
+            readEEpromBytes(HIGHSCORES_ADDR, highscores, HIGHSCORES_MAX);
+            orderHighscores();
+            printHighscore();
+            break;
+        case NEW_HIGHSCORE:
+            name_index = 0;
+            new_char = 0;
+            for (int i = 0; i < 4; ++i) {
+                name[i] = 0;
+            }
+            selected_char = 'A';
+
+            lcdshowcursor();
+            lcdprint(0, "New highscore!");
+            lcdprint(1, "");
+            lcdprintstop(1, "");
             break;
     }
+
+    print(0, state_txt);
+    print(1, state_info);
+    print(2, itoaconv(count));
 
     turnOffAll();
     count = 0;
 
     state = new_state;
+
 }
 
 int buttonPress(int color) {
@@ -223,40 +318,32 @@ int buttonPress(int color) {
         pressed = 1;
         return 1;
     }
-    turnOffAll();
     return 0;
 }
 
-
-char* state_txt;
-char* state_info = "";
-
 void update() {
-    if(pressed == -1) {
-        if(pinRead(PORTF, BTN1)) {
-            switchState(state_toggle ? SIMON : MAIN_MENU);
-            state_toggle = (state_toggle) ? 0 : 1;
-            pressed = 1;
-        }
-    }
+    int print_char = 1;
+    int print_highscore = 1;
+
     switch(state) {
+        case RESET:
+            if(buttonPress(RED)) {
+                switchState(MAIN_MENU);
+            } else if(buttonPress(GREEN)) {
+                resetHighscores();
+                switchState(MAIN_MENU);
+            }
+            break;
         case MAIN_MENU:
-            turnOffAll();
-            state_txt = "Main menu";
-            mainMenu();
-            break;
-        case SIMON:
-            state_txt = "Simon says...";
-            state_info = current_led;
-            break;
-        case READY:
-            state_txt = "Get ready!";
-            state_info = itoaconv(ready_count-count);
+            if(buttonPress(GREEN)) {
+                newGame();
+            } else if(buttonPress(RED)) {
+                switchState(HIGHSCORES);
+            } else if(buttonPress(BLUE)) {
+                switchState(RESET);
+            }
             break;
         case PLAYER:
-            state_txt = "Player says...";
-            state_info = current_led;
-
             if(buttonPress(BLUE)) {
                 playerPick(BLUE);
             } else if(buttonPress(GREEN)){
@@ -265,55 +352,59 @@ void update() {
                 playerPick(RED);
             } else if(buttonPress(YELLOW)) {
                 playerPick(YELLOW);
-            } else {
-                current_led = "";
-            }
+            } 
 
             break;
-        case LEVEL_UP:
-            state_txt = "You leveled up!";
-            state_info = "Level: " + itoaconv(game_level);
-            break;
         case GAME_OVER:
-            state_txt = "Game over!";
-            gameOver();
+            if(buttonPress(GREEN)) {
+                switchState(NEW_HIGHSCORE);
+            }
+            break;
+        case HIGHSCORES:
+            if(buttonPress(YELLOW)) {
+                highscore_num--;
+            } else if(buttonPress(BLUE)) {
+                highscore_num++;
+            } else if(buttonPress(RED)) {
+                switchState(MAIN_MENU);
+                print_highscore = 0;
+            } else {
+                print_highscore = 0;
+            }
+
+            if(print_highscore) {
+                printHighscore();
+            }
             break;
         case NEW_HIGHSCORE:
-            
+
             if(buttonPress(YELLOW)) {
-                selected_char++;
-            } else if(buttonPress(RED)) {
                 selected_char--;
+            } else if(buttonPress(BLUE)) {
+                selected_char++;
+            } else if(buttonPress(RED) && name_index > 0) {
+                lcdprintchar(' ');
+                lcdcursorleft();
+                lcdcursorleft();
+                name_index--;
             } else if(buttonPress(GREEN)) {
                 name[name_index] = selected_char;
                 name_index++;
                 new_char = 1;
-            } else if(buttonPress(BLUE)) {
-                selected_char = 'A';
-            } 
-
-            if(selected_char > 'Z') {
-                selected_char = 'A';
-            } else if(selected_char < 'A') {
-                selected_char = 'Z';
+            } else {
+                print_char = 0;
             }
 
-            newHighscore();
+
+            if(print_char) {
+                if(selected_char > 'Z') {
+                    selected_char = 'A';
+                } else if(selected_char < 'A') {
+                    selected_char = 'Z';
+                }
+                newHighscore();
+            }
             break;
-        case NEW_GAME:
-            newGame();
-            break;
-    }
-
-    print(0, state_txt);
-    print(1, state_info);
-    print(2, itoaconv(count));
-}
-
-
-void printSpaces() {
-    for (int i = 0; i < 16; i++) {
-        lcdprintchar(' ');
     }
 }
 
@@ -328,21 +419,15 @@ void fixedUpdate() {
             playerThink();
             break;
         case READY:
-            getReady();
+            if(count >= 5) 
+                switchState(PLAYER);
             break;
         case LEVEL_UP:
             if(count >= 5)
                 switchState(SIMON);
             break;
     }
-    /*  */
-    /* lcdhome(); */
-    /* lcdprintstring(state_txt); */
-    /* printSpaces(); */
-    /* lcdnext(); */
-    /* lcdprintstring(state_info); */
-    /* printSpaces(); */
-    /*  */
+
     if(pressed > -1)
         pressed--;
 }

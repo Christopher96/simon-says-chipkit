@@ -5,26 +5,16 @@
 
 #include "header.h"
 
-void u32init(void);
-void display_init(void);
-void display_string(int line, char *s);
-void display_update(void);
-
-void print_binary(int bin);
-void init(void);
-
 int main() {
 
     init();
-
     initlcd();
+    initBuzzer();
     initEEprom();
-    resetHighscores();
     initGame();
     return 0;
     getHighscores();
     return 0;
-    initBuzzer();
 
     return 0;
     

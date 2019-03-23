@@ -37,7 +37,6 @@ void resetTimer(int timer)  {
             TMR3 = 0x0;
             T3CON = 0x0;
             T3CONSET = 0x30;
-            PR3 = 4096;
     }
     clearTimer(timer); 
 }

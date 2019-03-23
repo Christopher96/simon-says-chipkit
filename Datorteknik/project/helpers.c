@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -107,3 +106,21 @@ int rand(void) {
 void srand(unsigned seed) {
     next = seed;
 }
+
+int strlen(char *s) {
+    int n;
+
+    for(n = 0; *s != '\0'; s++)
+        n++;
+    return n;
+}
+
+void strcat(char s[], char t[]) {
+    int i, j;
+    i = j = 0;
+    while(s[i] != '\0')
+        i++;
+    while((s[i++] = t[j++]) != '\0')
+        ;
+}
+
