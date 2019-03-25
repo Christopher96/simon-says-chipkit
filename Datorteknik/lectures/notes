@@ -115,11 +115,11 @@ Spatial locality
 You borrow 10 books of the same shelf of closely related topics
 
 
-Memory Hierarchy
-Cache               SRAM
-Main memory         DRAM
-Virtual memory      Flash/Magnetic disk
-
+Technology  Cost/GB $       Access time (ns)        Memory hierarchy        Special
+SRAM        500-1000        0.5-2.5                 Cache                   Integrated circuit
+DRAM        10-20           50-70                   Main Memory             Capacitors, needs refresh. DDR double data rate (rise/fall of clock)
+Flash       0.75-1          5000-50000              Virtual Memory          Wears out, used in SSD
+Magnetic    0.05-0.1        5-50 * 10^6             Virtual Memory          Platters that spin fast
 
 Miss rate = #misses / memory accesses
 
@@ -233,50 +233,3 @@ False sharing
 
 Clusters - LAN/Cloud
 MapReduce
-
-
-
-module 1 
-a)
-1000 0001 0101 0001 1111 1111 1011 1101
-0x8151FFBD
-
-int x = 5;
-int y = 6; 
-int *p = &x;    # p = x
-*p = x + y;     # x = x + y = 5 + 6
-p = &y;         # p = y
-*p = x + y;     # y = x + y = 11 + 6
-x = 11
-y = 17
-
-
-module 2
-The program counter of the main program will be stored as well as the registers that the program may use by pushing them to the stack. Once the interrupt handling routine has been executed the registers are then restored by popping them back from the stack and the main program returns to were it was interrupted by jumping back to the stored counter adress.
-
-module 4
-
-MemToReg = 0
-ALUSrc = 0
-Branch = 0
-A3 = 01000
-
-
-module 5
-
-C = ?
-b = 16
-N = 2
-#B = C/b = 1024 = x/16
-#S = B/N = 1024/2 = 512
-
-1024 * 4 = 4096 = #rows
-4096 / 2 = 2048 valid bits
-
-set = log2(S) = 9
-byte offset = log2(b) = 4
-tag = 32-13 = 19
-
-
-
-
