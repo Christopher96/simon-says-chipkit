@@ -1,2 +1,0 @@
-interrupt.c.o: interrupt.c /opt/mcb32tools/include/pic32mx.h header.h
-interrupt.c /opt/mcb32tools/include/pic32mx.h header.h :

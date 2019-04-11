@@ -1,2 +1,0 @@
-display.c.o: display.c header.h /opt/mcb32tools/include/pic32mx.h
-display.c header.h /opt/mcb32tools/include/pic32mx.h :
