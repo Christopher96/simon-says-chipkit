@@ -3,7 +3,7 @@
 
 This project is a interactive game inspired by the classical "Simon Says". Simon says a color and the player has to repeat the pattern that is given to them by pressing the buttons on the breadboard. If the player fail to do so it's game over.
 
-![Simon Says](simon-says.jpg)
+[![Simon Says](simon-says.jpg)](https://www.youtube.com/watch?v=PQqSkQ8x7jQ)
 
 The game program is built upon different components which are using different kinds of protocols and configurations of the available ports on the board:
 
